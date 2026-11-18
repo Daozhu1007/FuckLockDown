@@ -37,3 +37,6 @@ rewrite/lab/server.log
 # --- internal tool state ---
 .workbuddy-ai/
 .zcode/
+
+# local archive of the installer (do not publish)
+LockDownBrowser-2-1-6-03-356540564.zip

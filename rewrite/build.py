@@ -93,8 +93,9 @@ def build(output_root=None):
     core_plan = ROOT / "plans/lockdown-2.1.6.03-core.json"
     launcher_sources = [ROOT / "src/ProcessPolicyLauncher.cs", ROOT / "src/TargetDiscovery.cs",
                         ROOT / "src/BrowserReadiness.cs", ROOT / "src/PolicyData.cs",
-                        ROOT / "src/Tracer.cs"]
+                        ROOT / "src/ImageDataNeutralizer.cs", ROOT / "src/Tracer.cs"]
     input_paths = [Path(__file__), *launcher_sources, ROOT / "tests/Fixture.cs", core_plan,
+                   ROOT / "plans/generate_data_neutres.py",
                    ROOT / "plans/browser-extension-closures.json", ROOT / "src/app.manifest",
                    ROOT / "src/browser.manifest", ROOT / "src/Register-Protocol.ps1"]
     input_identities = [file_identity(path) for path in input_paths]
@@ -118,7 +119,8 @@ def build(output_root=None):
     fixture_dir.mkdir(parents=True, exist_ok=True)
     stub = fixture_dir / "native-stub.bin"
     # This is the entire native test function: mov eax,2 ; ret. No browser code runs.
-    needle = bytes.fromhex("b8 02 00 00 00 c3") + b"NPG_NATIVE_FIXTURE_20261116"
+    marker = b"NPG_NATIVE_FIXTURE_20261116"
+    needle = bytes.fromhex("b8 02 00 00 00 c3") + marker
     stub.write_bytes(needle)
     fixture = fixture_dir / "ProcessGateFixture.exe"
     compilations.append(compile_cs(ROOT / "tests/Fixture.cs", fixture, [(stub, "NativeStub.bin")]))
@@ -135,6 +137,14 @@ def build(output_root=None):
         "patches": [{"id": "native-return-value", "rva": hex(rva),
                      "expected": "b8 02 00 00 00", "replacement": "b8 01 00 00 00",
                      "rationale": "The fixture calls this native resource function and records its return value."}],
+        # The marker string follows the six native bytes inside the same (executable)
+        # section of the managed fixture, so the fixture plan explicitly opts in;
+        # the launcher still refuses executable-section neutres for real plans.
+        "dataNeutresAllowExecutableSection": True,
+        "dataNeutres": [{"id": "fixture-marker-neutre", "rva": hex(pe.get_rva_from_offset(offset + 6)),
+                         "expected": marker.hex(" "), "replacement": (b"NQ" + marker[2:]).hex(" "),
+                         "rationale": "Harmless marker string; the fixture reads it back to prove the "
+                                      "data-neutre machinery corrupts memory while the disk image stays intact."}],
     }
     fixture_plan_path = fixture_dir / "fixture-plan.json"
     fixture_plan_path.write_text(json.dumps(fixture_plan, indent=2) + "\n", encoding="utf-8")

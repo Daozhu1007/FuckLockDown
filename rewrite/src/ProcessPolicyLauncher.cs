@@ -352,6 +352,21 @@ namespace ProcessPolicyRewrite
         public string rationale { get; set; }
     }
 
+    /// <summary>
+    /// One equal-length byte corruption of a kill-path match string inside the
+    /// child's mapped image data. Neutres must never target executable code:
+    /// preflight rejects any neutre whose RVA resolves to an executable
+    /// section unless the plan explicitly opts in (the harmless test fixture).
+    /// </summary>
+    public sealed class DataNeutre
+    {
+        public string id { get; set; }
+        public string rva { get; set; }
+        public string expected { get; set; }
+        public string replacement { get; set; }
+        public string rationale { get; set; }
+    }
+
     public sealed class Plan
     {
         public int schemaVersion { get; set; }
@@ -363,6 +378,8 @@ namespace ProcessPolicyRewrite
         public int readinessTimeoutMilliseconds { get; set; }
         public string activation { get; set; }
         public List<Patch> patches { get; set; }
+        public List<DataNeutre> dataNeutres { get; set; }
+        public bool dataNeutresAllowExecutableSection { get; set; }
     }
 
     internal sealed class Options
@@ -374,6 +391,10 @@ namespace ProcessPolicyRewrite
         internal bool FailAfterRemoteValidation;
         internal string PatchMode;
         internal bool NeutralizeVm;
+        internal bool NoDataNeutres;
+        internal string DataNeuterTiming;
+        internal string NeutreKeep;
+        internal readonly List<string> NeutreSkip = new List<string>();
 #endif
         internal string Target;
         internal string Log;
@@ -402,6 +423,24 @@ namespace ProcessPolicyRewrite
                         throw new ArgumentException("Unknown experimental patch mode: " + value.PatchMode);
                 }
                 else if (item == "--lab-neutralize-vm") value.NeutralizeVm = true;
+                else if (item == "--no-data-neutres") value.NoDataNeutres = true;
+                else if (item == "--data-neuter-timing")
+                {
+                    if (++i == arguments.Length) throw new ArgumentException("Missing value for --data-neuter-timing");
+                    value.DataNeuterTiming = arguments[i];
+                    if (value.DataNeuterTiming != "suspend" && value.DataNeuterTiming != "activation")
+                        throw new ArgumentException("Unknown data neutre timing: " + value.DataNeuterTiming);
+                }
+                else if (item == "--data-neutres-keep")
+                {
+                    if (++i == arguments.Length) throw new ArgumentException("Missing value for --data-neutres-keep");
+                    value.NeutreKeep = arguments[i];
+                }
+                else if (item == "--data-neutres-skip")
+                {
+                    if (++i == arguments.Length) throw new ArgumentException("Missing value for --data-neutres-skip");
+                    value.NeutreSkip.Add(arguments[i]);
+                }
 #endif
                 else if (item == "--no-ui") value.NoUi = true;
                 else if (item == "--help" || item == "-h") value.Help = true;
@@ -507,6 +546,34 @@ namespace ProcessPolicyRewrite
             throw new InvalidDataException("Patch RVA has no file-backed executable mapping");
         }
 
+        /// <summary>
+        /// File offset for a data neutre. Unlike code patches, the target must
+        /// be readable file-backed data and normally must NOT be an executable
+        /// section: a neutre that lands in code would be a code patch in
+        /// disguise. Only a plan that explicitly opts in (the test fixture)
+        /// may neutre bytes inside an executable section.
+        /// </summary>
+        internal int DataOffset(uint rva, int count, bool allowExecutable)
+        {
+            Require(count > 0 && (ulong)rva + (uint)count <= ImageSize, "Invalid data neutre extent");
+            for (int i = 0; i < sectionCount; ++i)
+            {
+                int entry = sectionTable + i * 40;
+                uint start = BitConverter.ToUInt32(Bytes, entry + 12);
+                uint rawSize = BitConverter.ToUInt32(Bytes, entry + 16);
+                uint rawOffset = BitConverter.ToUInt32(Bytes, entry + 20);
+                uint flags = BitConverter.ToUInt32(Bytes, entry + 36);
+                if (rva < start || (ulong)rva + (uint)count > (ulong)start + rawSize) continue;
+                Require((flags & 0x40000000) != 0, "Data neutre must be in a readable section");
+                if (!allowExecutable)
+                    Require((flags & 0x20000000) == 0, "Data neutre must not target an executable section");
+                ulong position = (ulong)rawOffset + rva - start;
+                Require(position + (uint)count <= (ulong)Bytes.Length, "Truncated section");
+                return checked((int)position);
+            }
+            throw new InvalidDataException("Data neutre RVA has no file-backed mapping");
+        }
+
         internal static void Require(bool value, string message)
         {
             if (!value) throw new InvalidDataException(message);
@@ -597,7 +664,7 @@ namespace ProcessPolicyRewrite
             return result.Append('"').ToString();
         }
 
-        private static byte[] Hex(string value)
+        internal static byte[] Hex(string value)
         {
             string compact = value.Replace(" ", "").Replace("\r", "").Replace("\n", "");
             PeImage.Require(compact.Length > 0 && compact.Length % 2 == 0, "Invalid hex bytes");
@@ -606,10 +673,14 @@ namespace ProcessPolicyRewrite
                 result[i] = Byte.Parse(compact.Substring(i * 2, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
             return result;
         }
+        internal static uint Rva(string value)
+        {
+            return UInt32.Parse(value.StartsWith("0x", StringComparison.OrdinalIgnoreCase) ? value.Substring(2) : value,
+                                NumberStyles.HexNumber, CultureInfo.InvariantCulture);
+        }
         private static uint Rva(Patch value)
         {
-            return UInt32.Parse(value.rva.StartsWith("0x", StringComparison.OrdinalIgnoreCase) ? value.rva.Substring(2) : value.rva,
-                                NumberStyles.HexNumber, CultureInfo.InvariantCulture);
+            return Rva(value.rva);
         }
         internal static bool Equal(byte[] first, byte[] second)
         {
@@ -670,6 +741,24 @@ namespace ProcessPolicyRewrite
                 Array.Copy(source, offset, actual, 0, actual.Length);
                 PeImage.Require(Equal(actual, expected), "Source bytes do not match patch " + patch.id);
             }
+            // Data neutres are validated with the same rigor as code patches:
+            // pinned bytes against the on-disk image, unique IDs, and no overlap
+            // with any code patch or other neutre. DataOffset additionally
+            // rejects executable-section targets unless the plan opts in.
+            foreach (DataNeutre neutre in plan.dataNeutres ?? new List<DataNeutre>())
+            {
+                PeImage.Require(!String.IsNullOrEmpty(neutre.id) && ids.Add(neutre.id), "Invalid or repeated neutre ID");
+                byte[] expected = Hex(neutre.expected), replacement = Hex(neutre.replacement);
+                PeImage.Require(expected.Length == replacement.Length, "Data neutre changes data extent");
+                uint start = Rva(neutre.rva), end = checked(start + (uint)expected.Length);
+                foreach (Tuple<uint, uint> range in ranges)
+                    PeImage.Require(end <= range.Item1 || start >= range.Item2, "Overlapping neutre or patch");
+                ranges.Add(Tuple.Create(start, end));
+                int offset = image.DataOffset(start, expected.Length, plan.dataNeutresAllowExecutableSection);
+                byte[] actual = new byte[expected.Length];
+                Array.Copy(source, offset, actual, 0, actual.Length);
+                PeImage.Require(Equal(actual, expected), "Source bytes do not match neutre " + neutre.id);
+            }
             return image;
         }
 
@@ -686,11 +775,13 @@ namespace ProcessPolicyRewrite
                 byte[] source = File.ReadAllBytes(path);
                 PeImage image = Preflight(plan, path, source);
                 log.Event("preflight", new { sha256 = plan.targetSha256, patchCount = plan.patches.Count,
+                    neutreCount = (plan.dataNeutres ?? new List<DataNeutre>()).Count,
                     status = plan.status, checkOnly = options.Check });
                 if (options.Check)
                 {
                     Console.WriteLine(new JavaScriptSerializer().Serialize(new {
-                        verified = true, sha256 = plan.targetSha256, patchCount = plan.patches.Count, status = plan.status
+                        verified = true, sha256 = plan.targetSha256, patchCount = plan.patches.Count,
+                        neutreCount = (plan.dataNeutres ?? new List<DataNeutre>()).Count, status = plan.status
                     }));
                     return 0;
                 }
@@ -731,6 +822,36 @@ namespace ProcessPolicyRewrite
                     foreach (Patch patch in plan.patches)
                         PeImage.Require(Equal(Read(child.process, imageBase + Rva(patch), Hex(patch.expected).Length), Hex(patch.expected)),
                                         "Remote bytes do not match patch " + patch.id);
+                    // Data neutres: corrupt the third kill path's match strings in
+                    // the child's mapped .rdata before any browser code runs. This
+                    // is a pure data write, so the file-based integrity checks and
+                    // the code-integrity surface are untouched. The lab build can
+                    // defer the write to the heap-activation moment or disable it
+                    // for A/B discrimination.
+                    List<DataNeutre> neutres = plan.dataNeutres ?? new List<DataNeutre>();
+                    bool deferNeutres = false;
+#if NPG_TEST_HOOKS
+                    if (options.NoDataNeutres) neutres = new List<DataNeutre>();
+                    else
+                    {
+                        if (options.DataNeuterTiming == "activation") deferNeutres = true;
+                        // Ablation filters: restrict neutres to one kill-path
+                        // group, or drop a single entry, to isolate which
+                        // corruption the original's early phase reacts to.
+                        if (options.NeutreKeep != null)
+                        {
+                            List<DataNeutre> kept = new List<DataNeutre>();
+                            foreach (DataNeutre neutre in neutres)
+                                if (neutre.id.StartsWith(options.NeutreKeep, StringComparison.Ordinal))
+                                    kept.Add(neutre);
+                            neutres = kept;
+                        }
+                        foreach (string skipped in options.NeutreSkip)
+                            neutres.RemoveAll(delegate(DataNeutre neutre) { return neutre.id == skipped; });
+                    }
+#endif
+                    if (neutres.Count > 0 && !deferNeutres)
+                        ImageDataNeutralizer.Apply(child.process, imageBase, neutres, log);
                     string activation = String.IsNullOrEmpty(plan.activation) ? "code-patches" : plan.activation;
                     PeImage.Require(activation == "code-patches" || activation == "policy-data",
                                     "Unknown plan activation mode: " + activation);
@@ -741,7 +862,7 @@ namespace ProcessPolicyRewrite
                         // so the launcher never races the original's code-integrity checks.
                         log.Event("child_initializing", new { pid = child.processId, activation = activation });
                         PeImage.Require(Native.ResumeThread(child.thread) == 1, "Unexpected primary-thread suspend count");
-                        PolicyData.Activate(child.process, imageBase, log);
+                        PolicyData.Activate(child.process, imageBase, log, deferNeutres ? neutres : null);
                     }
                     else
                     {

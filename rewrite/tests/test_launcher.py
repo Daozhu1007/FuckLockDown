@@ -39,7 +39,9 @@ class LauncherIntegration(unittest.TestCase):
         result = self.run_root / "baseline.json"
         run = self.run_command([self.fixture, *self.fixture_args(result, 2)])
         self.assertEqual(run.returncode, 0, run.stderr)
-        self.assertEqual(json.loads(result.read_text(encoding="utf-8"))["value"], 2)
+        recorded = json.loads(result.read_text(encoding="utf-8"))
+        self.assertEqual(recorded["value"], 2)
+        self.assertEqual(recorded["markerText"], "NPG_NATIVE_FIXTURE_20261116")
 
     def test_actual_remote_patch_preserves_disk_image_and_arguments(self):
         result, log = self.run_root / "patched.json", self.run_root / "patched.jsonl"
@@ -51,9 +53,15 @@ class LauncherIntegration(unittest.TestCase):
         data = json.loads(result.read_text(encoding="utf-8"))
         self.assertEqual(data["value"], 1)
         self.assertEqual(data["arguments"], forwarded)
+        self.assertEqual(data["markerText"], "NQG_NATIVE_FIXTURE_20261116",
+                         "The data neutre must corrupt the marker in the child's memory")
         self.assertEqual(hashlib.sha256(self.fixture.read_bytes()).hexdigest(), before)
         kinds = [x["eventType"] for x in self.events(log)]
-        self.assertEqual(kinds, ["preflight", "child_created_suspended", "patch_verified", "child_resumed", "child_exit"])
+        self.assertEqual(kinds, ["preflight", "child_created_suspended", "image_data_neutralized",
+                                 "patch_verified", "child_resumed", "child_exit"])
+        neutre = next(x for x in self.events(log) if x["eventType"] == "image_data_neutralized")["data"]
+        self.assertEqual(neutre["applied"], 1)
+        self.assertFalse(neutre["executableMemoryChanged"])
 
     def test_check_mode_never_creates_a_child(self):
         result, log = self.run_root / "check-result.json", self.run_root / "check.jsonl"
@@ -62,6 +70,9 @@ class LauncherIntegration(unittest.TestCase):
         self.assertEqual(run.returncode, 0, run.stderr)
         self.assertFalse(result.exists())
         self.assertEqual([x["eventType"] for x in self.events(log)], ["preflight"])
+        reported = json.loads(run.stdout.strip().splitlines()[-1])
+        self.assertTrue(reported["verified"])
+        self.assertEqual(reported["neutreCount"], 1)
 
     def test_failure_after_creation_cleans_only_its_suspended_child(self):
         result, log = self.run_root / "failed-child-result.json", self.run_root / "failed-child.jsonl"
@@ -70,12 +81,14 @@ class LauncherIntegration(unittest.TestCase):
         self.assertEqual(run.returncode, 1)
         self.assertFalse(result.exists())
         events = self.events(log)
-        self.assertEqual([x["eventType"] for x in events],
-                         ["preflight", "child_created_suspended", "failed_child_cleanup", "error"])
-        cleanup = events[2]["data"]
+        self.assertEqual([item["eventType"] for item in events],
+                         ["preflight", "child_created_suspended", "image_data_neutralized",
+                          "failed_child_cleanup", "error"])
+        created = next(item for item in events if item["eventType"] == "child_created_suspended")["data"]
+        cleanup = next(item for item in events if item["eventType"] == "failed_child_cleanup")["data"]
         self.assertTrue(cleanup["stopped"])
         self.assertEqual(cleanup["wait"], 0)
-        self.assertEqual(cleanup["pid"], events[1]["data"]["pid"])
+        self.assertEqual(cleanup["pid"], created["pid"])
 
     def test_changed_file_is_rejected_before_process_creation(self):
         folder = self.run_root / "wrong identity"

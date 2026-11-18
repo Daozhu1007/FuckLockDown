@@ -113,7 +113,11 @@ namespace ProcessPolicyRewrite
         // selection, kill ~2.3s later); zeroing the armed flag prevents the
         // periodic process sweep with no other observed effect. Failures before
         // activation are fatal; after activation they are logged and tolerated.
-        internal static void Activate(IntPtr process, long imageBase, TraceLog log)
+        //
+        // pendingNeutres is the lab-only "activation" timing of the image-data
+        // neutralizer: the strings are corrupted in the same suspend window as
+        // the first successful table clear instead of before the first resume.
+        internal static void Activate(IntPtr process, long imageBase, TraceLog log, List<DataNeutre> pendingNeutres)
         {
             Stopwatch elapsed = Stopwatch.StartNew();
             bool active = false;
@@ -130,7 +134,15 @@ namespace ProcessPolicyRewrite
                         knownState = state;
                         BrowserReadiness.Suspend(process);
                         int cleared;
-                        try { cleared = ClearMatches(process, imageBase, log); }
+                        try
+                        {
+                            cleared = ClearMatches(process, imageBase, log);
+                            if (pendingNeutres != null && pendingNeutres.Count > 0)
+                            {
+                                ImageDataNeutralizer.Apply(process, imageBase, pendingNeutres, log);
+                                pendingNeutres = null;
+                            }
+                        }
                         finally { BrowserReadiness.Resume(process); }
                         if (cleared >= 0 && !active)
                         {

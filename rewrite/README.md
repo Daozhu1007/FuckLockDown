@@ -2,7 +2,7 @@
 
 本实现保留用户提供的原版浏览器主体，在新建主进程启动后，**清空其私有堆内进程规则表的全部匹配串**（1166 条规则、2830 个字符串，首次观测于启动后约 7 秒），使进程扫描永远匹配不到任何"需要关闭的程序"。**不修改任何可执行内存页**，因此不与原版的代码完整性自检发生任何接触；原版磁盘文件、CEF、LMS 适配与驱动均保持原样。
 
-可运行文件：[LockDownBrowser.NoProcessGate.exe](dist/LockDownBrowser.NoProcessGate.exe)（SHA-256 `12f8d8364b3804bf191a07ce2a296256821d61c7dd60ebf67e294b4ea537ff64`）。它与原版一样需要管理员权限。启动后创建原版主进程，完成版本及远程字节校验（十五处补丁字节作为活体版本指纹），恢复执行后轮询规则表，出现即挂起→清空→恢复，并持续监视直至浏览器退出：
+可运行文件：[LockDownBrowser.NoProcessGate.exe](dist/LockDownBrowser.NoProcessGate.exe)（v2.1，SHA-256 `2789c065362abfb50e2503ddd1cdb8d603b1fe94e958111344fcfa4d54927eb2`）。它与原版一样需要管理员权限。启动后创建原版主进程，完成版本及远程字节校验（十五处补丁字节作为活体版本指纹），恢复执行后轮询规则表，出现即挂起→清空→恢复，并持续监视直至浏览器退出：
 
 1. **启动规则表**（约 +1.6 秒解密出 1166 条规则）——清空全部 2830 个匹配串，删除"必须关闭以下程序"弹框及其启动击杀；
 2. **周期扫描门卫**——会话建立（选完服务器）后浏览器会一次性置位 state+0xf388 武装周期进程扫描（实测约 2.3 秒后开始击杀，Iris、向日葵、ToDesk 等皆死于此路径）；门卫在武装当刻将其清零（启动器自身日志记录 `periodic_scan_gate_cleared`），此后扫描永不运行。
@@ -72,11 +72,36 @@
 对照原版行为（`control-9aff7cd855d9-result.json`）：同条件下 t≈22.4 秒弹 ProcessCloseDlg，点击 Continue 后
 杀死 4 个触发进程中的 3 个。**"不提醒、不杀程序"的目标功能在生产构建上成立。**
 
+### v2.1（2026-11-19，第三路径研究结论 + 机器能力）
+
+v2.1 对 v2 的**行为完全一致**（生产计划零 neutre）；新增的是本轮第三 kill 路径研究的
+结论与机器能力（[V3-FINDINGS.md](V3-FINDINGS.md) 全文）：
+
+- **对照复现**：对齐静态锚点的诱饵组首次在 VM 复现选服后 ~3s 的 α ProcessCloseDlg
+  （"You must close the following application…"），且点击 Continue 会楔死整个 guest 会话
+  （原版选服后处置动作的直接足迹）。
+- **证伪记录**：对 β/γ/PTC4/α 匹配串的 .rdata 等长中和经五轮消融矩阵证伪——原版对
+  检测针串区（0x140b40b48..0x140b44060、0x140b451c8..0x140b45488）设有**区域级镜像自检**
+  （任何单字节、任何早期时序写入 → exit 1 ~10s 内）；α 名字串/键串则随浏览器自动启动
+  状态**漂移致死**。同页 α 块（0x140b45700..）不在自检范围内但状态不可靠，故全部不启用。
+- **保留机器**：ImageDataNeutralizer（字节级预检 + 拒绝可执行节 + 幂等远程写入）、
+  计划的 `dataNeutres` 段、实验构建的消融旗标（`--data-neutres-keep/-skip/-timing`），
+  全部经夹具端到端单测覆盖（夹具标记串内存腐蚀、磁盘不变断言）。
+- **v2.1 同条件终验收**（guest 处于最恶劣的自动启动成熟态）：`preflight{neutreCount:0}` →
+  `policy_data_verified(1166/2830)` → `policy_activated` → **`periodic_scan_gate_cleared{armed:1}`**
+  （自动启动会话 +14s 武装、门卫当刻清零）；120s/240s 两轮浏览器与启动器全程存活、
+  44 条 UI 观测 **0 弹框**、IrisPortable/sunloginclient/despins 诱饵全程存活
+  （`lab/reports/thirdpath-v3-partial.json`、`thirdlog-c6ff61f2/fa803f39` trace）。
+
 ## 已知边界
 
 - 用户宿主机安装的是 2.1.3.08 x86，不受本版本支持（固定哈希保护是特性不是缺陷：取消检查不等于版本适配）。
 - 实验虚拟机内请勿挂载任何光驱：附加 IDE 光驱会暴露虚拟机特征，导致原版 VM 检测拦截（`lab/lab.py` 已将 tools 投递盘改为 `--attach-tools` 可选项）。实验脚本的长程收尾路径存在偶发挂死（今日 4 例中 3 例），已用"分离执行 + 增量上传"模式绕开（`lab/guest/WatchFinal.ps1`、`lab/enqueue_watcher.py`），不影响本验收结论。
 - 定时扫描与完整考试会话的兼容性仍以真实使用为准；虚拟机内未做考试登录。
+- 第三 kill 路径的残留面（β 窗口击杀、γ WMI 无线显示、PTC4 远程服务名单、α 硬编码名与
+  机构 `process.list` 配置）在本轮被完整测绘但**未去除**——纯数据路径被镜像自检与状态
+  依赖性排除，详见 [V3-FINDINGS.md](V3-FINDINGS.md) 的残留地图与后续选项。对常见后台
+  软件（Iris/向日葵/ToDesk 一类）的威胁面已由 v2 的表清零+门卫覆盖。
 
 ## 构建与测试
 
@@ -85,6 +110,6 @@ python .\build.py
 python -m unittest discover -s .\tests -p 'test_*.py' -v
 ```
 
-本机构建使用系统自带 .NET Framework x64 编译器（无需 .NET SDK），Python 构建辅助需要 pefile。2026-11-18 构建：17 项测试全部通过（5 项自建无害宿主集成、7 项启动时序、5 项路径发现）。
+本机构建使用系统自带 .NET Framework x64 编译器（无需 .NET SDK），Python 构建辅助需要 pefile。2026-11-19 构建：19 项测试通过（夹具集成/启动时序/路径发现 + dataNeutres 空集与字节级静态校验；空集下字节校验正确跳过）。
 
-源码：[ProcessPolicyLauncher.cs](src/ProcessPolicyLauncher.cs)（主流程与激活分支）、[PolicyData.cs](src/PolicyData.cs)（规则表观测/清空/监视）、[BrowserReadiness.cs](src/BrowserReadiness.cs)、[TargetDiscovery.cs](src/TargetDiscovery.cs)。原版字节分析的完整材料（含对原版二进制的静态解析转储）不属于本公开仓库。
+源码：[ProcessPolicyLauncher.cs](src/ProcessPolicyLauncher.cs)（主流程与激活分支）、[PolicyData.cs](src/PolicyData.cs)（规则表观测/清空/监视）、[ImageDataNeutralizer.cs](src/ImageDataNeutralizer.cs)（镜像数据中和机器，生产空置）、[BrowserReadiness.cs](src/BrowserReadiness.cs)、[TargetDiscovery.cs](src/TargetDiscovery.cs)。原版字节分析的完整材料（含对原版二进制的静态解析转储）不属于本公开仓库。

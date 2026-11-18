@@ -129,8 +129,15 @@ internal static class Fixture
                    elapsed.ElapsedMilliseconds < waitForPatchMilliseconds) Thread.Sleep(5);
             NativeFunction function = (NativeFunction)Marshal.GetDelegateForFunctionPointer(code, typeof(NativeFunction));
             int value = function();
+            // The marker string sits right after the six native bytes. The launcher's
+            // data neutre corrupts it in this process's memory before Main starts, so
+            // reporting it here proves the neutralizer end to end (disk stays intact).
+            byte[] markerBytes = new byte[Encoding.ASCII.GetBytes("NPG_NATIVE_FIXTURE_20261116").Length];
+            Marshal.Copy(new IntPtr(code.ToInt64() + 6), markerBytes, 0, markerBytes.Length);
+            string markerText = Encoding.ASCII.GetString(markerBytes);
             string json = new JavaScriptSerializer().Serialize(new {
                 value = value, expected = expected, arguments = forwarded,
+                markerText = markerText,
                 readinessWindowCreated = window != IntPtr.Zero,
                 readinessWindowVisible = window != IntPtr.Zero && IsWindowVisible(window),
                 valueBeforeShowing = valueBeforeShowing,

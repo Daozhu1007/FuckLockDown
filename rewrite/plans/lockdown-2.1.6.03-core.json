@@ -56,5 +56,7 @@
       "rationale": "Jump to RVA 0x28c836 before constructing or binding the modal object; preserve Office enumeration and later state updates without leaving an ATL binding node."
     }
   ],
-  "activation": "policy-data"
+  "activation": "policy-data",
+  "dataNeutres": [],
+  "dataNeutresNote": "Empty by measurement: the beta/gamma/ptc4 needle regions are covered by the original's region integrity self-check, and the alpha entries are state-dependently lethal once the browser enters its auto-launch flow; see lab/reports/neutre-matrix*.json and plans/generate_data_neutres.py. The launcher keeps the tested machinery so a future safe mechanism can use it."
 }
