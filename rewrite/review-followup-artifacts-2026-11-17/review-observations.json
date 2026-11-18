@@ -1,0 +1,343 @@
+{
+  "review_date": "2026-11-17",
+  "timezone": "Asia/Shanghai",
+  "scope": "Read source and PE/CLI metadata, compare saved test records, run harmless fixture tests and check-only verifier. No browser or VM execution.",
+  "files": [
+    {
+      "path": "D:\\Code\\FuckLockDown\\rewrite\\src\\ProcessPolicyLauncher.cs",
+      "bytes": 46968,
+      "sha256": "2b754e7aaa0a7202953e35ab1655c0f79a1167db364c461808f0f9149923f848",
+      "last_write_Asia_Shanghai": "2026-11-17T06:06:06.359718+08:00"
+    },
+    {
+      "path": "D:\\Code\\FuckLockDown\\rewrite\\src\\TargetDiscovery.cs",
+      "bytes": 12592,
+      "sha256": "2e6e2660f77b313830fd8465fe6bbb91206ab17f234433f8b0224c2c2ab010b6",
+      "last_write_Asia_Shanghai": "2026-11-17T05:58:59.607336+08:00"
+    },
+    {
+      "path": "D:\\Code\\FuckLockDown\\rewrite\\src\\BrowserReadiness.cs",
+      "bytes": 3357,
+      "sha256": "128d3772bac4f8c7db0bc52f085bd2e7688c7e809abe4412b9057bce206503a1",
+      "last_write_Asia_Shanghai": "2026-11-17T06:05:14.031662+08:00"
+    },
+    {
+      "path": "D:\\Code\\FuckLockDown\\rewrite\\src\\Tracer.cs",
+      "bytes": 20178,
+      "sha256": "6b100de3df0f93a2e663cf7f028328185dce47138c6e624801c8c33eac714005",
+      "last_write_Asia_Shanghai": "2026-11-16T17:19:21.345145+08:00"
+    },
+    {
+      "path": "D:\\Code\\FuckLockDown\\rewrite\\build.py",
+      "bytes": 5649,
+      "sha256": "4a5ba950c48273afc7f4d4f463be507c0c18f6b26b5e6379da171853a7debac2",
+      "last_write_Asia_Shanghai": "2026-11-17T06:05:14.033891+08:00"
+    },
+    {
+      "path": "D:\\Code\\FuckLockDown\\rewrite\\plans\\lockdown-2.1.6.03-core.json",
+      "bytes": 1765,
+      "sha256": "baeec062a910b2c38506013b84bc29842ad515414986ef48e9261c3ad8f52aeb",
+      "last_write_Asia_Shanghai": "2026-11-17T06:05:14.034896+08:00"
+    },
+    {
+      "path": "D:\\Code\\FuckLockDown\\rewrite\\plans\\browser-extension-closures.json",
+      "bytes": 1958,
+      "sha256": "dd0b8271c33d9e2883e1e5906cd56b74ad4b073da5d15799238bf43269064a79",
+      "last_write_Asia_Shanghai": "2026-11-16T14:08:37.479891+08:00"
+    },
+    {
+      "path": "D:\\Code\\FuckLockDown\\rewrite\\dist\\patch-plan.json",
+      "bytes": 4445,
+      "sha256": "59516a2c622657c9e35e2c419eff8aa73a4683e493a96bade12b91693224361e",
+      "last_write_Asia_Shanghai": "2026-11-17T06:06:06.905027+08:00"
+    },
+    {
+      "path": "D:\\Code\\FuckLockDown\\rewrite\\dist\\LockDownBrowser.NoProcessGate.exe",
+      "bytes": 52224,
+      "sha256": "3027b601a406e7e5b4a980c7648993e0185f647fefef943d87525d3547e3aad9",
+      "last_write_Asia_Shanghai": "2026-11-17T06:06:07.122154+08:00"
+    },
+    {
+      "path": "D:\\Code\\FuckLockDown\\rewrite\\dist\\VerifyVersion.exe",
+      "bytes": 52224,
+      "sha256": "4040d56902ef4dc53a1260a0d64e84b66ca640c73034f953e5b45e8fa60e5909",
+      "last_write_Asia_Shanghai": "2026-11-17T06:06:07.322669+08:00"
+    },
+    {
+      "path": "D:\\Code\\FuckLockDown\\rewrite\\test-artifacts\\ExperimentLauncher.exe",
+      "bytes": 63488,
+      "sha256": "23b12ec4db690055ab9085c427bfa7938735d2528eb385e1d9590caba5a15e14",
+      "last_write_Asia_Shanghai": "2026-11-17T06:06:07.521135+08:00"
+    },
+    {
+      "path": "D:\\Code\\FuckLockDown\\rewrite\\tests\\test_launcher.py",
+      "bytes": 5208,
+      "sha256": "10470721bf187779d50177a3e58d14d687052a0cf29d30bf7a3af7c79dd53de1",
+      "last_write_Asia_Shanghai": "2026-11-16T13:26:50.888558+08:00"
+    },
+    {
+      "path": "D:\\Code\\FuckLockDown\\rewrite\\tests\\test_target_discovery.py",
+      "bytes": 4834,
+      "sha256": "6e0f4ee28b09314f82fe60eb2d8ac0ee3c4c6915e30fb1f07a899b32c06aa43b",
+      "last_write_Asia_Shanghai": "2026-11-17T05:58:33.616030+08:00"
+    },
+    {
+      "path": "D:\\Code\\FuckLockDown\\rewrite\\lab\\guest\\PositiveControl.ps1",
+      "bytes": 4613,
+      "sha256": "d8d7e20a637edac29612d465718439ae249f66bfb28da695f31351612ef37ac9",
+      "last_write_Asia_Shanghai": "2026-11-17T06:00:46.368509+08:00"
+    },
+    {
+      "path": "D:\\Code\\FuckLockDown\\rewrite\\lab\\reports\\reply-1794866647916248300-a759407e.json",
+      "bytes": 9002,
+      "sha256": "1f4dbc0e4711df5aa2d408f655c4f1bfe30d0743637dd482f612475b7c247af2",
+      "last_write_Asia_Shanghai": "2026-11-17T06:05:18.282257+08:00"
+    }
+  ],
+  "tests": {
+    "command": "python -m unittest discover -s tests -p test_*.py -v",
+    "cwd": "D:\\Code\\FuckLockDown\\rewrite",
+    "executed_this_review": true,
+    "return_code": 0,
+    "tests_passed": 11,
+    "seconds": 2.579,
+    "covers_browser_readiness": false
+  },
+  "verifiers": [
+    {
+      "command": "dist/VerifyVersion.exe --no-ui --log review-followup-artifacts-2026-11-17/verify-installed.jsonl",
+      "return_code": 1,
+      "result": "Found installed original 2.1.3.08 x86; incompatible SHA-256."
+    },
+    {
+      "command": "dist/VerifyVersion.exe --exe <extracted 2.1.6.03> --no-ui --log review-followup-artifacts-2026-11-17/verify-extracted.jsonl",
+      "return_code": 0,
+      "result": "verified=true; 15 patches; AMD64 exact target."
+    }
+  ],
+  "positive_control": {
+    "reply": "1794866647916248300-a759407e",
+    "reply_time": "2026-11-16T22:05:19.1872617+00:00",
+    "target_sha256": "635EA16E065539F2169121C8666BE4095D7C7AB1EEEAAD5E21BA73A84AAB0582",
+    "startedPid": 9732,
+    "selectedServer": {
+      "entries": [
+        "Kean Canvas",
+        "Kean University Production LMS"
+      ],
+      "selected": 0
+    },
+    "triggers": [
+      {
+        "name": "deskpins.exe",
+        "pid": 6604
+      },
+      {
+        "name": "sidebar.exe",
+        "pid": 4532
+      },
+      {
+        "name": "msmsgs.exe",
+        "pid": 7516
+      },
+      {
+        "name": "synergy.exe",
+        "pid": 7424
+      }
+    ],
+    "sample_count": 80,
+    "first_sample": {
+      "ldb": 1,
+      "t": 0.5,
+      "alive": [
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    "last_sample": {
+      "ldb": 5,
+      "t": 40,
+      "alive": [
+        false,
+        true,
+        true,
+        true
+      ]
+    },
+    "relevant_windows": [
+      {
+        "t": 11,
+        "window": {
+          "handle": 197316,
+          "pid": 9732,
+          "title": "LockDown Browser - Version 2.1.6.03",
+          "cls": "#32770",
+          "children": [
+            {
+              "handle": 131784,
+              "id": 1,
+              "cls": "Button",
+              "text": "Close Application and Continue"
+            },
+            {
+              "handle": 131782,
+              "id": 2,
+              "cls": "Button",
+              "text": "Exit LockDown Browser"
+            },
+            {
+              "handle": 131786,
+              "id": -1,
+              "cls": "Static",
+              "text": "You must close the following application before starting LockDown Browser:\r\n\r\nWindows Sidebar\r\n(sidebar.exe)\r\n\r\nDo you want LockDown Browser to attempt to close this application for you?"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "rea_production_members_evidence": "ev_3b6e3917d0203197e73c7f4588ee6a9de5cf3d8f06706ba21533a4dd6873f00d",
+  "rea_verifier_members_evidence": "ev_3efdb3db5e2aca6888cef7e45ffb1c0f751537b1fc609b7eaf5cdc1fcbdff51a",
+  "originalPatchPlanCheck": {
+    "path": "D:\\Code\\FuckLockDown\\analysis\\lockdown-2.1.6.03\\payload\\ProgramFiles64Folder\\Respondus\\LockDown Browser\\LockDownBrowser.exe",
+    "sha256": "635ea16e065539f2169121c8666be4095d7c7ab1eeeaad5e21ba73a84aab0582",
+    "patches": [
+      {
+        "id": "process-close-initial",
+        "rva": "0x22cf69",
+        "file_offset": 2278249,
+        "expected_matches": true,
+        "length_equal": true,
+        "bytes": 5
+      },
+      {
+        "id": "process-close-check-a",
+        "rva": "0x230547",
+        "file_offset": 2292039,
+        "expected_matches": true,
+        "length_equal": true,
+        "bytes": 5
+      },
+      {
+        "id": "process-close-check-b",
+        "rva": "0x2324b9",
+        "file_offset": 2300089,
+        "expected_matches": true,
+        "length_equal": true,
+        "bytes": 5
+      },
+      {
+        "id": "process-close-inverse-counter",
+        "rva": "0x232829",
+        "file_offset": 2300969,
+        "expected_matches": true,
+        "length_equal": true,
+        "bytes": 5
+      },
+      {
+        "id": "process-close-window-enumeration",
+        "rva": "0x2443cf",
+        "file_offset": 2373583,
+        "expected_matches": true,
+        "length_equal": true,
+        "bytes": 5
+      },
+      {
+        "id": "process-close-office",
+        "rva": "0x28c927",
+        "file_offset": 2669863,
+        "expected_matches": true,
+        "length_equal": true,
+        "bytes": 5
+      },
+      {
+        "id": "office-skip-dialog-construction",
+        "rva": "0x28c787",
+        "file_offset": 2669447,
+        "expected_matches": true,
+        "length_equal": true,
+        "bytes": 6
+      },
+      {
+        "id": "chrome-extension-close-dialog",
+        "rva": "0x22a01b",
+        "file_offset": 2266139,
+        "expected_matches": true,
+        "length_equal": true,
+        "bytes": 5
+      },
+      {
+        "id": "chrome-pid-vector-cleanup-only",
+        "rva": "0x22a0d9",
+        "file_offset": 2266329,
+        "expected_matches": true,
+        "length_equal": true,
+        "bytes": 5
+      },
+      {
+        "id": "edge-extension-close-dialog",
+        "rva": "0x22a13e",
+        "file_offset": 2266430,
+        "expected_matches": true,
+        "length_equal": true,
+        "bytes": 5
+      },
+      {
+        "id": "edge-pid-vector-cleanup-only",
+        "rva": "0x22a1ff",
+        "file_offset": 2266623,
+        "expected_matches": true,
+        "length_equal": true,
+        "bytes": 5
+      },
+      {
+        "id": "brave-extension-close-dialog",
+        "rva": "0x22a26c",
+        "file_offset": 2266732,
+        "expected_matches": true,
+        "length_equal": true,
+        "bytes": 5
+      },
+      {
+        "id": "brave-pid-vector-cleanup-only",
+        "rva": "0x22a294",
+        "file_offset": 2266772,
+        "expected_matches": true,
+        "length_equal": true,
+        "bytes": 5
+      },
+      {
+        "id": "opera-extension-close-dialog",
+        "rva": "0x229fa4",
+        "file_offset": 2266020,
+        "expected_matches": true,
+        "length_equal": true,
+        "bytes": 5
+      },
+      {
+        "id": "opera-pid-vector-cleanup-only",
+        "rva": "0x22a365",
+        "file_offset": 2266981,
+        "expected_matches": true,
+        "length_equal": true,
+        "bytes": 5
+      }
+    ],
+    "total_bytes": 76
+  },
+  "embeddedPlanChecks": [
+    {
+      "path": "D:\\Code\\FuckLockDown\\rewrite\\dist\\LockDownBrowser.NoProcessGate.exe",
+      "resource_sha256": "59516a2c622657c9e35e2c419eff8aa73a4683e493a96bade12b91693224361e",
+      "equals_dist_plan": true
+    },
+    {
+      "path": "D:\\Code\\FuckLockDown\\rewrite\\dist\\VerifyVersion.exe",
+      "resource_sha256": "59516a2c622657c9e35e2c419eff8aa73a4683e493a96bade12b91693224361e",
+      "equals_dist_plan": true
+    }
+  ],
+  "finalOriginalFilesUnchanged": true
+}

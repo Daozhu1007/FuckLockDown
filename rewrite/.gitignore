@@ -1,0 +1,15 @@
+__pycache__/
+tests/__pycache__/
+test-artifacts/
+dist/protocol-backup/
+lab/*.iso
+lab/*.qcow2
+lab/*.fd
+lab/*.log
+lab/*.json
+lab/*.pid
+lab/__pycache__/
+lab/tools-media/
+lab/queue/
+lab/sent/
+lab/tpm/

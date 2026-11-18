@@ -1,0 +1,83 @@
+{
+  "reply": "1794866647916248300-a759407e",
+  "reply_time": "2026-11-16T22:05:19.1872617+00:00",
+  "target_sha256": "635EA16E065539F2169121C8666BE4095D7C7AB1EEEAAD5E21BA73A84AAB0582",
+  "startedPid": 9732,
+  "selectedServer": {
+    "entries": [
+      "Kean Canvas",
+      "Kean University Production LMS"
+    ],
+    "selected": 0
+  },
+  "triggers": [
+    {
+      "name": "deskpins.exe",
+      "pid": 6604
+    },
+    {
+      "name": "sidebar.exe",
+      "pid": 4532
+    },
+    {
+      "name": "msmsgs.exe",
+      "pid": 7516
+    },
+    {
+      "name": "synergy.exe",
+      "pid": 7424
+    }
+  ],
+  "sample_count": 80,
+  "first_sample": {
+    "ldb": 1,
+    "t": 0.5,
+    "alive": [
+      true,
+      true,
+      true,
+      true
+    ]
+  },
+  "last_sample": {
+    "ldb": 5,
+    "t": 40,
+    "alive": [
+      false,
+      true,
+      true,
+      true
+    ]
+  },
+  "relevant_windows": [
+    {
+      "t": 11,
+      "window": {
+        "handle": 197316,
+        "pid": 9732,
+        "title": "LockDown Browser - Version 2.1.6.03",
+        "cls": "#32770",
+        "children": [
+          {
+            "handle": 131784,
+            "id": 1,
+            "cls": "Button",
+            "text": "Close Application and Continue"
+          },
+          {
+            "handle": 131782,
+            "id": 2,
+            "cls": "Button",
+            "text": "Exit LockDown Browser"
+          },
+          {
+            "handle": 131786,
+            "id": -1,
+            "cls": "Static",
+            "text": "You must close the following application before starting LockDown Browser:\r\n\r\nWindows Sidebar\r\n(sidebar.exe)\r\n\r\nDo you want LockDown Browser to attempt to close this application for you?"
+          }
+        ]
+      }
+    }
+  ]
+}

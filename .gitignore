@@ -1,0 +1,39 @@
+# --- proprietary third-party content: never publish ---
+LockDownBrowser-2-1-6-03-356540564.msi
+analysis/
+iris-vm.zip
+rewrite/lab/rbinary138-*
+rewrite/lab/experiment_b64.txt
+
+# --- lab secrets and credentials ---
+rewrite/lab/secrets.json
+rewrite/lab/tools-media/
+
+# --- huge VM images / firmware state ---
+rewrite/lab/windows.qcow2
+rewrite/lab/windows-eval.iso
+rewrite/lab/tools.iso
+rewrite/lab/OVMF_VARS.fd
+rewrite/lab/tpm/
+rewrite/lab/download-state.json
+*.qcow2
+*.iso
+
+# --- scratch / caches / raw dumps ---
+__pycache__/
+*.pyc
+rewrite/lab/tmp-rebuild/
+*.ppm
+*.pending
+*.b64
+rewrite/lab/qemu.log
+rewrite/lab/tpm.log
+rewrite/lab/server.json
+rewrite/lab/vm.json
+rewrite/lab/first-boot-started.json
+rewrite/lab/media.json
+rewrite/lab/server.log
+
+# --- internal tool state ---
+.workbuddy-ai/
+.zcode/

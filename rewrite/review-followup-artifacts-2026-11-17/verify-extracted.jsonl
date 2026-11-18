@@ -1,0 +1,1 @@
+{"time":"2026-11-16T22:15:48.1386868+00:00","eventType":"preflight","data":{"sha256":"635ea16e065539f2169121c8666be4095d7c7ab1eeeaad5e21ba73a84aab0582","patchCount":15,"status":"startup-stage process policy rewrite; LMS session compatibility not validated","checkOnly":true}}

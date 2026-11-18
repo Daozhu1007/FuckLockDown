@@ -1,0 +1,68 @@
+{
+  "sources": [
+    {
+      "path": "D:\\Code\\FuckLockDown\\rewrite\\src\\ProcessPolicyLauncher.cs",
+      "bytes": 47345,
+      "sha256": "f6d4324ab209afd77a036d46a40a47bad95669e46c6e941064db70cec2af2470"
+    },
+    {
+      "path": "D:\\Code\\FuckLockDown\\rewrite\\src\\TargetDiscovery.cs",
+      "bytes": 12592,
+      "sha256": "2e6e2660f77b313830fd8465fe6bbb91206ab17f234433f8b0224c2c2ab010b6"
+    },
+    {
+      "path": "D:\\Code\\FuckLockDown\\rewrite\\src\\BrowserReadiness.cs",
+      "bytes": 4632,
+      "sha256": "0bf69a18c882366363efa7eae6d773531a52e3f0c183d4a8076023d100d6725f"
+    },
+    {
+      "path": "D:\\Code\\FuckLockDown\\rewrite\\src\\Tracer.cs",
+      "bytes": 20178,
+      "sha256": "6b100de3df0f93a2e663cf7f028328185dce47138c6e624801c8c33eac714005"
+    }
+  ],
+  "resources": [
+    {
+      "name": "PatchPlan.json",
+      "file": {
+        "path": "D:\\Code\\FuckLockDown\\rewrite\\lab\\candidates\\initial-only\\plan.json",
+        "bytes": 651,
+        "sha256": "173eebd81de45238d53a7c8a8bf968127e5636390b633bdf2df6f1dd4c94ca33"
+      }
+    }
+  ],
+  "manifest": {
+    "path": "D:\\Code\\FuckLockDown\\rewrite\\src\\browser.manifest",
+    "bytes": 593,
+    "sha256": "9f10a44db07add930bb015d5062bac606175f21e83092225567fbe55d17e6a40"
+  },
+  "output": {
+    "path": "D:\\Code\\FuckLockDown\\rewrite\\lab\\candidates\\initial-only\\CandidateLauncher.exe",
+    "bytes": 50176,
+    "sha256": "b09490997eecafb1e1a6fe0fd292eec138d8b4525033492a7e26e15b863755c8"
+  },
+  "command": [
+    "C:\\WINDOWS\\Microsoft.NET\\Framework64\\v4.0.30319\\csc.exe",
+    "/nologo",
+    "/optimize+",
+    "/platform:x64",
+    "/target:winexe",
+    "/utf8output",
+    "/r:System.Web.Extensions.dll",
+    "/r:System.Windows.Forms.dll",
+    "/win32manifest:D:\\Code\\FuckLockDown\\rewrite\\src\\browser.manifest",
+    "/out:D:\\Code\\FuckLockDown\\rewrite\\lab\\candidates\\initial-only\\CandidateLauncher.exe",
+    "/resource:D:\\Code\\FuckLockDown\\rewrite\\lab\\candidates\\initial-only\\plan.json,PatchPlan.json",
+    "D:\\Code\\FuckLockDown\\rewrite\\src\\ProcessPolicyLauncher.cs",
+    "D:\\Code\\FuckLockDown\\rewrite\\src\\TargetDiscovery.cs",
+    "D:\\Code\\FuckLockDown\\rewrite\\src\\BrowserReadiness.cs",
+    "D:\\Code\\FuckLockDown\\rewrite\\src\\Tracer.cs"
+  ],
+  "flags": {
+    "architecture": "x64",
+    "test_hooks": false,
+    "admin": true,
+    "check_only": false,
+    "console": false
+  }
+}

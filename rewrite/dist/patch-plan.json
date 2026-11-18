@@ -1,0 +1,120 @@
+{
+  "schemaVersion": 1,
+  "targetName": "LockDownBrowser.exe",
+  "targetSha256": "635ea16e065539f2169121c8666be4095d7c7ab1eeeaad5e21ba73a84aab0582",
+  "status": "version-pinned process policy rewrite; heap rule-table activation",
+  "readinessWindowClass": "CEFCLIENT",
+  "readinessWindowVisible": true,
+  "patches": [
+    {
+      "id": "process-close-initial",
+      "rva": "0x22cf69",
+      "expected": "e8 42 8d ff ff",
+      "replacement": "b8 01 00 00 00",
+      "rationale": "Continue the finite enumeration without calling the dialog/termination wrapper."
+    },
+    {
+      "id": "process-close-check-a",
+      "rva": "0x230547",
+      "expected": "e8 64 57 ff ff",
+      "replacement": "b8 01 00 00 00",
+      "rationale": "Skip the failure counter at this call site."
+    },
+    {
+      "id": "process-close-check-b",
+      "rva": "0x2324b9",
+      "expected": "e8 f2 37 ff ff",
+      "replacement": "b8 01 00 00 00",
+      "rationale": "Skip the failure counter at this call site."
+    },
+    {
+      "id": "process-close-inverse-counter",
+      "rva": "0x232829",
+      "expected": "e8 82 34 ff ff",
+      "replacement": "b8 00 00 00 00",
+      "rationale": "This site requires zero to avoid increasing the blocking counter."
+    },
+    {
+      "id": "process-close-window-enumeration",
+      "rva": "0x2443cf",
+      "expected": "e8 dc 18 fe ff",
+      "replacement": "b8 01 00 00 00",
+      "rationale": "Continue the callback and preserve its subsequent PID bookkeeping."
+    },
+    {
+      "id": "process-close-office",
+      "rva": "0x28c927",
+      "expected": "e8 84 93 f9 ff",
+      "replacement": "b8 01 00 00 00",
+      "rationale": "Skip termination of a running Office process; preserve later Office state updates."
+    },
+    {
+      "id": "office-skip-dialog-construction",
+      "rva": "0x28c787",
+      "expected": "0f 85 a9 00 00 00",
+      "replacement": "e9 aa 00 00 00 90",
+      "rationale": "Jump to RVA 0x28c836 before constructing or binding the modal object; preserve Office enumeration and later state updates without leaving an ATL binding node."
+    },
+    {
+      "id": "chrome-extension-close-dialog",
+      "rva": "0x22a01b",
+      "expected": "48 8b 44 24 78",
+      "replacement": "e9 9c 00 00 00",
+      "rationale": "Jump to RVA 0x22a0bc before allocating or binding the dialog thunk; preserve the initialized object's subsequent cleanup."
+    },
+    {
+      "id": "chrome-pid-vector-cleanup-only",
+      "rva": "0x22a0d9",
+      "expected": "e8 b2 d7 ff ff",
+      "replacement": "e8 12 b9 04 00",
+      "rationale": "Call the existing vector destructor at RVA 0x2759f0 instead of the process termination loop; preserve cleanup."
+    },
+    {
+      "id": "edge-extension-close-dialog",
+      "rva": "0x22a13e",
+      "expected": "48 8b 44 24 78",
+      "replacement": "e9 9f 00 00 00",
+      "rationale": "Jump to RVA 0x22a1e2 before allocating or binding the dialog thunk; preserve subsequent cleanup."
+    },
+    {
+      "id": "edge-pid-vector-cleanup-only",
+      "rva": "0x22a1ff",
+      "expected": "e8 8c d6 ff ff",
+      "replacement": "e8 ec b7 04 00",
+      "rationale": "Keep the existing vector destructor without terminating Edge."
+    },
+    {
+      "id": "brave-extension-close-dialog",
+      "rva": "0x22a26c",
+      "expected": "e8 5f 81 01 00",
+      "replacement": "e9 06 00 00 00",
+      "rationale": "Jump to RVA 0x22a277, skipping the complete DoModal wrapper and its result test before any internal ATL binding occurs."
+    },
+    {
+      "id": "brave-pid-vector-cleanup-only",
+      "rva": "0x22a294",
+      "expected": "e8 f7 d5 ff ff",
+      "replacement": "e8 57 b7 04 00",
+      "rationale": "Keep the existing vector destructor without terminating Brave."
+    },
+    {
+      "id": "opera-extension-close-dialog",
+      "rva": "0x229fa4",
+      "expected": "48 8b 44 24 78",
+      "replacement": "e9 9f 03 00 00",
+      "rationale": "Jump to RVA 0x22a348 before allocating or binding the dialog thunk; preserve subsequent cleanup."
+    },
+    {
+      "id": "opera-pid-vector-cleanup-only",
+      "rva": "0x22a365",
+      "expected": "e8 26 d5 ff ff",
+      "replacement": "e8 86 b6 04 00",
+      "rationale": "Keep the existing vector destructor without terminating Opera."
+    }
+  ],
+  "activation": "policy-data",
+  "groups": [
+    "process-close-and-office",
+    "browser-extension-closures"
+  ]
+}

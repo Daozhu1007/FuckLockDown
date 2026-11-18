@@ -1,0 +1,14 @@
+{
+  "group": "browser-extension-closures",
+  "status": "experimental; local branches checked, original browser session not validated",
+  "patches": [
+    {"id":"chrome-extension-close-dialog","rva":"0x22a01b","expected":"48 8b 44 24 78","replacement":"e9 9c 00 00 00","rationale":"Jump to RVA 0x22a0bc before allocating or binding the dialog thunk; preserve the initialized object's subsequent cleanup."},
+    {"id":"chrome-pid-vector-cleanup-only","rva":"0x22a0d9","expected":"e8 b2 d7 ff ff","replacement":"e8 12 b9 04 00","rationale":"Call the existing vector destructor at RVA 0x2759f0 instead of the process termination loop; preserve cleanup."},
+    {"id":"edge-extension-close-dialog","rva":"0x22a13e","expected":"48 8b 44 24 78","replacement":"e9 9f 00 00 00","rationale":"Jump to RVA 0x22a1e2 before allocating or binding the dialog thunk; preserve subsequent cleanup."},
+    {"id":"edge-pid-vector-cleanup-only","rva":"0x22a1ff","expected":"e8 8c d6 ff ff","replacement":"e8 ec b7 04 00","rationale":"Keep the existing vector destructor without terminating Edge."},
+    {"id":"brave-extension-close-dialog","rva":"0x22a26c","expected":"e8 5f 81 01 00","replacement":"e9 06 00 00 00","rationale":"Jump to RVA 0x22a277, skipping the complete DoModal wrapper and its result test before any internal ATL binding occurs."},
+    {"id":"brave-pid-vector-cleanup-only","rva":"0x22a294","expected":"e8 f7 d5 ff ff","replacement":"e8 57 b7 04 00","rationale":"Keep the existing vector destructor without terminating Brave."},
+    {"id":"opera-extension-close-dialog","rva":"0x229fa4","expected":"48 8b 44 24 78","replacement":"e9 9f 03 00 00","rationale":"Jump to RVA 0x22a348 before allocating or binding the dialog thunk; preserve subsequent cleanup."},
+    {"id":"opera-pid-vector-cleanup-only","rva":"0x22a365","expected":"e8 26 d5 ff ff","replacement":"e8 86 b6 04 00","rationale":"Keep the existing vector destructor without terminating Opera."}
+  ]
+}

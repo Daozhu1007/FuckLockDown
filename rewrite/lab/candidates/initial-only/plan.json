@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "targetName": "LockDownBrowser.exe",
+  "targetSha256": "635ea16e065539f2169121c8666be4095d7c7ab1eeeaad5e21ba73a84aab0582",
+  "status": "version-pinned process policy rewrite",
+  "readinessWindowClass": "CEFCLIENT",
+  "readinessWindowVisible": true,
+  "patches": [
+    {
+      "id": "process-close-initial",
+      "rva": "0x22cf69",
+      "expected": "e8 42 8d ff ff",
+      "replacement": "b8 01 00 00 00",
+      "rationale": "Continue the finite enumeration without calling the dialog/termination wrapper."
+    }
+  ],
+  "groups": [
+    "process-close-and-office",
+    "browser-extension-closures"
+  ]
+}
